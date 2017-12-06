@@ -8,6 +8,7 @@
 
 using container_t =
 std::vector<std::vector<int32_t>>;
+
 template<class execution_policy>
 std::tuple<double, int32_t> calculate_sum(
     execution_policy&& policy, container_t& container) {
