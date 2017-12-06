@@ -7,19 +7,19 @@
 #include <vector>
 
 using container_t =
-std::vector<std::vector<int64_t>>;
+std::vector<std::vector<int32_t>>;
 template<class execution_policy>
-std::tuple<double, int64_t> calculate_sum(
+std::tuple<double, int32_t> calculate_sum(
     execution_policy&& policy, container_t& container) {
-    std::atomic<int64_t> sum{ 0 };
+    std::atomic<int32_t> sum{ 0 };
     auto start_time = std::chrono::steady_clock::now();
     std::for_each(
         policy, std::begin(container), std::end(container),
-        [&](const std::vector<int64_t>& local_container) {
-        auto local_sum = int64_t{ 0 };
+        [&](const std::vector<int32_t>& local_container) {
+        auto local_sum = int32_t{ 0 };
         std::for_each(
             std::execution::seq, std::begin(local_container),
-            std::end(local_container), [&](const int64_t& value) {
+            std::end(local_container), [&](const int32_t& value) {
             local_sum += value;
         });
         sum += local_sum;
@@ -31,13 +31,13 @@ std::tuple<double, int64_t> calculate_sum(
 };
 
 void speed_test() {
-    auto concurrency =
-        int64_t{ std::thread::hardware_concurrency() - 1 };
-    concurrency = std::max(concurrency, int64_t{ 1 });
-    auto local_size = 536870912 / concurrency;
+    auto concurrency = static_cast<int32_t>(
+        std::thread::hardware_concurrency() - 1);
+    concurrency = std::max(concurrency, int32_t{ 1 });
+    auto local_size = 268435456 / concurrency;
     auto container = container_t{};
     for (auto i = 0; i < concurrency; ++i) {
-        container.push_back(std::vector<int64_t>{ local_size });
+        container.push_back(std::vector<int32_t>{ local_size });
         container[i].resize(local_size);
         std::fill(
             std::execution::par_unseq,
