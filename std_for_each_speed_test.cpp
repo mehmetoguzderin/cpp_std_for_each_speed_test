@@ -33,13 +33,14 @@ std::tuple<double, int64_t> calculate_sum(
 void speed_test() {
     auto concurrency =
         int64_t{ std::thread::hardware_concurrency() - 1 };
+    concurrency = std::max(concurrency, int64_t{ 1 });
     auto local_size = 536870912 / concurrency;
     auto container = container_t{};
-    for(auto i = 0; i < concurrency; ++i) {
+    for (auto i = 0; i < concurrency; ++i) {
         container.push_back(std::vector<int64_t>{ local_size });
         container[i].resize(local_size);
         std::fill(
-            std::execution::seq,
+            std::execution::par_unseq,
             std::begin(container[i]),
             std::end(container[i]),
             2);
