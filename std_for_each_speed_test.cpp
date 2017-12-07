@@ -28,8 +28,8 @@ std::tuple<double, T> calculate_sum(
     });
     auto end_time = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast
-        <std::chrono::microseconds>(end_time - start_time);
-    return { double(duration.count()) * 0.001, sum };
+        <std::chrono::duration<double, std::milli>>(end_time - start_time);
+    return { duration.count(), sum };
 };
 
 template<typename T>
