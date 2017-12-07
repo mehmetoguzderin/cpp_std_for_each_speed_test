@@ -6,21 +6,22 @@
 #include <string>
 #include <vector>
 
+template<typename T>
 using container_t =
-std::vector<std::vector<int32_t>>;
+std::vector<std::vector<T>>;
 
-template<class execution_policy>
-std::tuple<double, int32_t> calculate_sum(
-    execution_policy&& policy, container_t& container) {
-    std::atomic<int32_t> sum{ 0 };
+template<class execution_policy, typename T>
+std::tuple<double, T> calculate_sum(
+    execution_policy&& policy, container_t<T>& container) {
+    std::atomic<T> sum{ 0 };
     auto start_time = std::chrono::steady_clock::now();
     std::for_each(
         policy, std::begin(container), std::end(container),
-        [&](const std::vector<int32_t>& local_container) {
-        auto local_sum = int32_t{ 0 };
+        [&](const std::vector<T>& local_container) {
+        auto local_sum = T{ 0 };
         std::for_each(
             std::execution::seq, std::begin(local_container),
-            std::end(local_container), [&](const int32_t& value) {
+            std::end(local_container), [&](const T& value) {
             local_sum += value;
         });
         sum += local_sum;
@@ -31,14 +32,21 @@ std::tuple<double, int32_t> calculate_sum(
     return { double(duration.count()) * 0.001, sum };
 };
 
+template<typename T>
 void speed_test() {
-    auto concurrency = static_cast<int32_t>(
-        std::thread::hardware_concurrency() - 1);
-    concurrency = std::max(concurrency, int32_t{ 1 });
-    auto local_size = 268435456 / concurrency;
-    auto container = container_t{};
+    auto concurrency =
+        T{ static_cast<T>(std::thread::hardware_concurrency() - 1) };
+    concurrency = std::max(concurrency, T{ 1 });
+
+    T local_size;
+#if BIT_64
+    local_size = 536870912 / concurrency;
+#elif BIT_32
+    local_size = 268435456 / concurrency;
+#endif
+    auto container = container_t<T>{};
     for (auto i = 0; i < concurrency; ++i) {
-        container.push_back(std::vector<int32_t>{ local_size });
+        container.push_back(std::vector<T>{ local_size });
         container[i].resize(local_size);
         std::fill(
             std::execution::par_unseq,
@@ -65,7 +73,11 @@ void speed_test() {
 }
 
 int main() {
-    speed_test();
+#if BIT_64
+    speed_test<int64_t>();
+#elif BIT_32
+    speed_test<int32_t>();
+#endif
     std::cout << "\n**Press enter to exit.**";
     std::string wait_for_input;
     std::getline(std::cin, wait_for_input);
