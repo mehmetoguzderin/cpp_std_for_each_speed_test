@@ -33,17 +33,12 @@ std::tuple<double, T> calculate_sum(
 };
 
 template<typename T>
-void speed_test() {
+void speed_test(T global_size) {
     auto concurrency =
-        T{ static_cast<T>(std::thread::hardware_concurrency() - 1) };
+        static_cast<T>(std::thread::hardware_concurrency() - 1);
     concurrency = std::max(concurrency, T{ 1 });
+    T local_size = global_size / concurrency;
 
-    T local_size;
-#if BIT_64
-    local_size = 536870912 / concurrency;
-#elif BIT_32
-    local_size = 268435456 / concurrency;
-#endif
     auto container = container_t<T>{};
     for (auto i = 0; i < concurrency; ++i) {
         container.push_back(std::vector<T>{ local_size });
@@ -54,6 +49,7 @@ void speed_test() {
             std::end(container[i]),
             2);
     }
+
     auto[seq_duration, seq_sum] =
         calculate_sum(std::execution::seq, container);
     auto[par_duration, par_sum] =
@@ -73,11 +69,12 @@ void speed_test() {
 }
 
 int main() {
-#if BIT_64
-    speed_test<int64_t>();
-#elif BIT_32
-    speed_test<int32_t>();
-#endif
+    if constexpr(sizeof(void*) >= 8) {
+        speed_test<int64_t>(536870912);
+    }
+    else {
+        speed_test<int32_t>(268435456);
+    }
     std::cout << "\n**Press enter to exit.**";
     std::string wait_for_input;
     std::getline(std::cin, wait_for_input);
