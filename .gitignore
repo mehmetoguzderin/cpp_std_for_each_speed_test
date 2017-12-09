@@ -7,5 +7,15 @@ cmake_install.cmake
 install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
-.vs
+.vs/
 .vscode
+*.filters
+*.ilk
+*.tlog
+*.log
+*.obj
+*.pdb
+*.exe
+*.sln
+*.vcxproj
+*vcxproj.user
