@@ -1,16 +1,4 @@
-#include <algorithm>
-#include <atomic>
-#include <chrono>
-#include <execution>
-#include <iostream>
-#include <string>
-#include <vector>
-
-#include "benchmark\include\benchmark\benchmark.h"
-
-template<typename T>
-using container_t =
-std::vector<std::vector<T>>;
+#include "std_for_each_speed_test.h"
 
 template<class execution_policy, typename T>
 std::tuple<double, T> calculate_sum(
@@ -35,25 +23,6 @@ std::tuple<double, T> calculate_sum(
 };
 
 template<typename T>
-void fill_container(T global_size, container_t<T> &container)
-{
-    auto concurrency =
-        static_cast<T>(std::thread::hardware_concurrency() - 1);
-    concurrency = std::max(concurrency, T{ 1 });
-    T local_size = global_size / concurrency;
-
-    for (auto i = 0; i < concurrency; ++i) {
-        container.push_back(std::vector<T>{ local_size });
-        container[i].resize(local_size);
-        std::fill(
-            std::execution::par_unseq,
-            std::begin(container[i]),
-            std::end(container[i]),
-            2);
-    }
-}
-
-template<typename T>
 void speed_test(T global_size) {
     auto container = container_t<T>{};
     fill_container(global_size, container);
@@ -76,39 +45,13 @@ void speed_test(T global_size) {
         "\n* Sum: " << par_unseq_sum << "\n";
 }
 
-template<typename T>
-void benchmark_test(T global_size)
-{
-    auto BM_run = [=](benchmark::State& state, auto data)
-    {
-        auto container = container_t<T>{};
-        fill_container(global_size, container);
-
-        for (auto _ : state)
-        {
-            calculate_sum(data, container);
-        }
-    };
-
-    benchmark::RegisterBenchmark("std::execution::seq", BM_run, std::execution::seq);
-    benchmark::RegisterBenchmark("std::execution::par", BM_run, std::execution::par);
-    benchmark::RegisterBenchmark("std::execution::par_unseq", BM_run, std::execution::par_unseq);
-}
-
 int main() {
     if constexpr(sizeof(void*) >= 8) {
         speed_test<int64_t>(536870912);
-        benchmark_test<int64_t>(536870912);
     }
     else {
         speed_test<int32_t>(268435456);
-        benchmark_test<int32_t>(268435456);
     }
-
-    std::cout << "\n";
-
-    benchmark::RunSpecifiedBenchmarks();
-
     std::cout << "\n**Press enter to exit.**";
     std::string wait_for_input;
     std::getline(std::cin, wait_for_input);
