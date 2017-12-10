@@ -13,7 +13,7 @@ When appropriately implemented by compilers, operations like std::for_each will 
 
 ## How to Use
 1. Open command prompt with git
-2. Type `git clone --recursive -- https://github.com/OguzDerin/cpp_std_for_each_speed_test.git`
+2. Execute command `git clone --recursive -- https://github.com/OguzDerin/cpp_std_for_each_speed_test.git`
 3. Generate using your CMake workflow
    * **Visual Studio 2017+**: Enter the folder, right click, choose "Open in Visual Studio" and you are ready to go!
      * To use different speed tests, right click CMakeLists.txt and navigate to "Debug from Build Folder"
