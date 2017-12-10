@@ -16,10 +16,6 @@ set_target_properties(
 add_dependencies( std_for_each_speed_test benchmark )
 target_link_libraries( std_for_each_speed_test benchmark )
 
-target_link_libraries(std_for_each_speed_test
-  shlwapi
-)
-
 if( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" )
   # using Clang
 elseif( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" )
@@ -27,6 +23,10 @@ elseif( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" )
 elseif( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" )
   # using Intel C++
 elseif( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" )
+  target_link_libraries(std_for_each_speed_test
+    shlwapi
+  )
+
   # using Visual Studio C++
   set_target_properties(
     std_for_each_speed_test PROPERTIES
